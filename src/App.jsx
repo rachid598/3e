@@ -4,6 +4,7 @@ import PlayerModal from './components/PlayerModal'
 import Hub from './pages/Hub'
 import PuissanceStrike from './modules/puissance-strike/PuissanceStrike'
 import Theoremes from './modules/theoremes/Theoremes'
+import Automatismes from './modules/automatismes/Automatismes'
 
 export default function App() {
   const { player, register, logout } = usePlayer()
@@ -20,6 +21,9 @@ export default function App() {
   }
   if (currentGame === 'theoremes') {
     return <Theoremes onBack={() => setCurrentGame(null)} />
+  }
+  if (currentGame === 'automatismes') {
+    return <Automatismes onBack={() => setCurrentGame(null)} />
   }
 
   // Hub / home screen

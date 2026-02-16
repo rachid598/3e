@@ -1,6 +1,14 @@
-import { Zap, Variable, TreePine, Triangle, Lock, LogOut } from 'lucide-react'
+import { Zap, Variable, TreePine, Triangle, Brain, Lock, LogOut } from 'lucide-react'
 
 const GAMES = [
+  {
+    id: 'automatismes',
+    title: 'Automatismes',
+    description: 'Entraînement rapide multi-domaines — type Brevet',
+    icon: Brain,
+    color: 'from-cyan-500 to-teal-600',
+    active: true,
+  },
   {
     id: 'puissance-strike',
     title: 'Puissance-Strike',
