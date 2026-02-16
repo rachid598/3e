@@ -45,6 +45,44 @@ function superChar(n) {
   return String(n).split('').map(c => map[c] || c).join('')
 }
 
+/**
+ * Déduplique les choix QCM : si un distracteur a le même texte que la
+ * bonne réponse ou qu'un autre distracteur, on le remplace par un
+ * distracteur de secours. Garantit toujours 4 choix uniques.
+ */
+function dedup(choices) {
+  const correct = choices.find((c) => c.correct)
+  const seen = new Set([correct.text])
+  const result = [correct]
+  for (const c of choices) {
+    if (c.correct) continue
+    if (!seen.has(c.text)) {
+      seen.add(c.text)
+      result.push(c)
+    }
+  }
+  // Remplir si des doublons ont été retirés
+  let pad = 1
+  while (result.length < 4) {
+    const fallback = `${correct.text} ?${pad}`
+    // Génère un distracteur numérique décalé si possible
+    const num = parseFloat(correct.text.replace(',', '.').replace(/[^0-9.\-/]/g, ''))
+    let alt
+    if (!isNaN(num)) {
+      alt = String(num + pad * (Math.random() < 0.5 ? 1 : -1)).replace('.', ',')
+    } else {
+      alt = fallback
+    }
+    if (!seen.has(alt)) {
+      seen.add(alt)
+      result.push({ text: alt, correct: false })
+    }
+    pad++
+    if (pad > 10) break // sécurité
+  }
+  return shuffle(result)
+}
+
 // Table de correspondance fraction/décimal/% (sujets zéro DNB)
 const FRAC_DEC_TABLE = [
   { frac: '1/2', dec: '0,5', pct: '50', num: 1, den: 2 },
@@ -73,7 +111,7 @@ function calculNumerique() {
         category: 'Calcul',
         format: 'qcm',
         question: `Combien vaut  ${a}/${b} + ${c}/${d} ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: `${num / g}/${den / g}`, correct: true },
           { text: `${a + c}/${b + d}`, correct: false },
           { text: `${num}/${den}`, correct: false },
@@ -113,7 +151,7 @@ function calculNumerique() {
         category: 'Calcul',
         format: 'qcm',
         question: `Combien vaut  ${a} + ${b} × ${c} ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: `${result}`, correct: true },
           { text: `${(a + b) * c}`, correct: false },
           { text: `${a * b + c}`, correct: false },
@@ -138,7 +176,7 @@ function calculNumerique() {
         category: 'Calcul',
         format: 'qcm',
         question: `Quel est l'inverse de ${n} ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: `1/${n}`, correct: true },
           { text: `−${n}`, correct: false },
           { text: `${n}/1`, correct: false },
@@ -153,7 +191,7 @@ function calculNumerique() {
         category: 'Calcul',
         format: 'qcm',
         question: `Combien vaut  ${base}${superChar(-1)} ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: `1/${base}`, correct: true },
           { text: `−${base}`, correct: false },
           { text: `−1/${base}`, correct: false },
@@ -173,7 +211,7 @@ function calculNumerique() {
           category: 'Calcul',
           format: 'qcm',
           question: `Quelle est l'écriture décimale de ${entry.frac} ?`,
-          choices: shuffle([{ text: entry.dec, correct: true }, ...distractors]),
+          choices: dedup([{ text: entry.dec, correct: true }, ...distractors]),
         }
       } else if (direction === 1) {
         // décimal → fraction
@@ -182,7 +220,7 @@ function calculNumerique() {
           category: 'Calcul',
           format: 'qcm',
           question: `Quelle fraction correspond à ${entry.dec} ?`,
-          choices: shuffle([{ text: entry.frac, correct: true }, ...distractors]),
+          choices: dedup([{ text: entry.frac, correct: true }, ...distractors]),
         }
       } else {
         // fraction → pourcentage
@@ -191,7 +229,7 @@ function calculNumerique() {
           category: 'Calcul',
           format: 'qcm',
           question: `À quel pourcentage correspond ${entry.frac} ?`,
-          choices: shuffle([{ text: `${entry.pct} %`, correct: true }, ...distractors]),
+          choices: dedup([{ text: `${entry.pct} %`, correct: true }, ...distractors]),
         }
       }
     },
@@ -298,7 +336,7 @@ function calculNumerique() {
         category: 'Calcul',
         format: 'qcm',
         question: `Combien vaut ${a}/${b} × ${c}/${d} ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: correct, correct: true },
           { text: `${a + c}/${b + d}`, correct: false },
           { text: `${a * c}/${b + d}`, correct: false },
@@ -321,7 +359,7 @@ function calculLitteral() {
         category: 'Algèbre',
         format: 'qcm',
         question: `Développer :  ${a}(x + ${b})`,
-        choices: shuffle([
+        choices: dedup([
           { text: `${a}x + ${a * b}`, correct: true },
           { text: `${a}x + ${b}`, correct: false },
           { text: `${a + b}x`, correct: false },
@@ -349,7 +387,7 @@ function calculLitteral() {
         category: 'Algèbre',
         format: 'qcm',
         question: `Développer :  (${a}x + ${b})²`,
-        choices: shuffle([
+        choices: dedup([
           { text: `${a * a}x² + ${2 * a * b}x + ${b * b}`, correct: true },
           { text: `${a * a}x² + ${b * b}`, correct: false },
           { text: `${a * a}x² + ${a * b}x + ${b * b}`, correct: false },
@@ -364,7 +402,7 @@ function calculLitteral() {
         category: 'Algèbre',
         format: 'qcm',
         question: `Factoriser :  ${k * a}x + ${k * b}`,
-        choices: shuffle([
+        choices: dedup([
           { text: `${k}(${a}x + ${b})`, correct: true },
           { text: `${a}(${k}x + ${b})`, correct: false },
           { text: `${k * a}(x + ${b})`, correct: false },
@@ -490,7 +528,7 @@ function probabilitesStats() {
         category: 'Probas',
         format: 'qcm',
         question: `Un sac contient ${total} boules. ${favorable} sont rouges.\nQuelle est la probabilité de tirer une boule rouge ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: `${favorable / g}/${total / g}`, correct: true },
           { text: `${total - favorable}/${total}`, correct: false },
           { text: `${favorable}/${total + favorable}`, correct: false },
@@ -537,7 +575,7 @@ function probabilitesStats() {
         category: 'Probas',
         format: 'qcm',
         question: `La probabilité d'un événement A est ${pNum / g}/${pDen / g}.\nQuelle est la probabilité de l'événement contraire ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: `${cNum / gc}/${pDen / gc}`, correct: true },
           { text: `${pNum / g}/${pDen / g}`, correct: false },
           { text: `1/${pDen / g}`, correct: false },
@@ -609,7 +647,7 @@ function probabilitesStats() {
         category: 'Probas',
         format: 'qcm',
         question: s.q,
-        choices: shuffle([
+        choices: dedup([
           { text: s.simplified, correct: true },
           ...shuffle(wrongAnswers).slice(0, 3).map((w) => ({ text: w, correct: false })),
         ]),
@@ -642,7 +680,7 @@ function geometrie() {
         category: 'Géométrie',
         format: 'qcm',
         question: `Quel est le périmètre d'un cercle de rayon ${r} cm ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: `${d}π cm`, correct: true },
           { text: `${r}π cm`, correct: false },
           { text: `${r * r}π cm`, correct: false },
@@ -704,7 +742,7 @@ function geometrie() {
         category: 'Géométrie',
         format: 'qcm',
         question: `Quelle est l'aire d'un disque de rayon ${r} cm ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: `${rSquared}π cm²`, correct: true },
           { text: `${2 * r}π cm²`, correct: false },
           { text: `${r}π cm²`, correct: false },
@@ -732,7 +770,7 @@ function geometrie() {
         category: 'Géométrie',
         format: 'qcm',
         question: `Volume d'un cylindre de rayon ${r} cm et hauteur ${h} cm ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: `${coeff}π cm³`, correct: true },
           { text: `${2 * r * h}π cm³`, correct: false },
           { text: `${rSquared}π cm³`, correct: false },
@@ -908,7 +946,7 @@ function fonctions() {
         category: 'Fonctions',
         format: 'qcm',
         question: `Le point A a pour coordonnées (${px} ; ${py}).\nQuelle est l'${asked} de A ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: String(correct), correct: true },
           { text: String(wrong), correct: false },
           { text: String(-correct), correct: false },
@@ -925,7 +963,7 @@ function fonctions() {
           category: 'Fonctions',
           format: 'qcm',
           question: `Le graphique d'une fonction f passe par le point (${x0} ; ${y0}).\nQuelle est l'image de ${x0} par f ?`,
-          choices: shuffle([
+          choices: dedup([
             { text: String(y0), correct: true },
             { text: String(x0), correct: false },
             { text: String(-y0), correct: false },
@@ -937,7 +975,7 @@ function fonctions() {
         category: 'Fonctions',
         format: 'qcm',
         question: `Le graphique d'une fonction f passe par le point (${x0} ; ${y0}).\nDonner un antécédent de ${y0} par f.`,
-        choices: shuffle([
+        choices: dedup([
           { text: String(x0), correct: true },
           { text: String(y0), correct: false },
           { text: String(-x0), correct: false },
@@ -974,7 +1012,7 @@ function algorithmique() {
         category: 'Algo',
         format: 'qcm',
         question: `Tableur : A1 = ${a1}, B1 = ${b1}.\nQue contient C1 si la formule est ${op.formula} ?`,
-        choices: shuffle([
+        choices: dedup([
           { text: String(op.result), correct: true },
           ...[...wrongs].map((w) => ({ text: String(w), correct: false })),
         ]),
