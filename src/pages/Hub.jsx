@@ -31,7 +31,7 @@ const GAMES = [
     description: 'Pythagore, Thalès et réciproques',
     icon: Triangle,
     color: 'from-purple-500 to-violet-600',
-    active: false,
+    active: true,
   },
 ]
 

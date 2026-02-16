@@ -3,6 +3,7 @@ import { usePlayer } from './hooks/usePlayer'
 import PlayerModal from './components/PlayerModal'
 import Hub from './pages/Hub'
 import PuissanceStrike from './modules/puissance-strike/PuissanceStrike'
+import Theoremes from './modules/theoremes/Theoremes'
 
 export default function App() {
   const { player, register, logout } = usePlayer()
@@ -16,6 +17,9 @@ export default function App() {
   // Render current game module
   if (currentGame === 'puissance-strike') {
     return <PuissanceStrike onBack={() => setCurrentGame(null)} />
+  }
+  if (currentGame === 'theoremes') {
+    return <Theoremes onBack={() => setCurrentGame(null)} />
   }
 
   // Hub / home screen
