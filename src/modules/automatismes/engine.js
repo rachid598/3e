@@ -1,15 +1,17 @@
 /**
- * Automatismes Brevet — Engine
+ * Automatismes Brevet DNB 2026 — Engine
  *
- * Generates quick-fire questions covering all Brevet Part 1 topics:
- * - Calcul numérique (fractions, puissances, racines)
+ * 49 types de questions couvrant les 8 domaines du programme :
+ * - Calcul numérique (fractions, puissances, racines, relatifs, conversions)
  * - Calcul littéral (développer, factoriser, résoudre)
  * - Proportionnalité / pourcentages / vitesse
- * - Probabilités / statistiques
- * - Géométrie (angles, aires, volumes, trigonométrie)
- * - Programmes de calcul / fonctions
+ * - Probabilités / statistiques (moyenne, médiane, étendue)
+ * - Géométrie (angles, aires, volumes, conversions, symétries)
+ * - Fonctions (image, antécédent, coordonnées, lecture graphique)
+ * - Algorithmique (tableur, Scratch)
  *
  * 3 formats: QCM, Vrai/Faux, Réponse directe
+ * Source: Liste indicative d'automatismes — Eduscol, octobre 2025
  */
 
 function rand(min, max) {
@@ -29,11 +31,40 @@ function shuffle(arr) {
   return a
 }
 
-// ─── Question banks by category ─────────────────────────
+// ─── Utilities ──────────────────────────────────────────
+
+function gcd(a, b) {
+  a = Math.abs(a); b = Math.abs(b)
+  while (b) { [a, b] = [b, a % b] }
+  return a
+}
+
+function superChar(n) {
+  const map = { '-': '\u207B', '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3',
+    '4': '\u2074', '5': '\u2075', '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079' }
+  return String(n).split('').map(c => map[c] || c).join('')
+}
+
+// Table de correspondance fraction/décimal/% (sujets zéro DNB)
+const FRAC_DEC_TABLE = [
+  { frac: '1/2', dec: '0,5', pct: '50', num: 1, den: 2 },
+  { frac: '1/4', dec: '0,25', pct: '25', num: 1, den: 4 },
+  { frac: '3/4', dec: '0,75', pct: '75', num: 3, den: 4 },
+  { frac: '1/5', dec: '0,2', pct: '20', num: 1, den: 5 },
+  { frac: '2/5', dec: '0,4', pct: '40', num: 2, den: 5 },
+  { frac: '3/5', dec: '0,6', pct: '60', num: 3, den: 5 },
+  { frac: '4/5', dec: '0,8', pct: '80', num: 4, den: 5 },
+  { frac: '1/10', dec: '0,1', pct: '10', num: 1, den: 10 },
+  { frac: '3/10', dec: '0,3', pct: '30', num: 3, den: 10 },
+  { frac: '7/10', dec: '0,7', pct: '70', num: 7, den: 10 },
+  { frac: '9/10', dec: '0,9', pct: '90', num: 9, den: 10 },
+]
+
+// ─── 1. Calcul numérique (12 générateurs) ───────────────
 
 function calculNumerique() {
   const generators = [
-    // Fractions
+    // 1. Addition de fractions
     () => {
       const a = rand(1, 9), b = rand(2, 9), c = rand(1, 9), d = rand(2, 9)
       const num = a * d + c * b, den = b * d
@@ -50,7 +81,7 @@ function calculNumerique() {
         ]),
       }
     },
-    // Puissance de 10
+    // 2. Puissance de 10
     () => {
       const exp = rand(2, 6)
       const val = Math.pow(10, exp)
@@ -62,7 +93,7 @@ function calculNumerique() {
         acceptedAnswers: [String(val)],
       }
     },
-    // Carré parfait
+    // 3. Carré parfait
     () => {
       const n = rand(2, 15)
       const sq = n * n
@@ -74,7 +105,7 @@ function calculNumerique() {
         acceptedAnswers: [String(n)],
       }
     },
-    // Priorité opérations
+    // 4. Priorité opérations
     () => {
       const a = rand(2, 8), b = rand(2, 5), c = rand(1, 9)
       const result = a + b * c
@@ -90,7 +121,7 @@ function calculNumerique() {
         ]),
       }
     },
-    // Opposé / inverse
+    // 5. Opposé / inverse
     () => {
       const n = rand(2, 12)
       const isOppose = Math.random() < 0.5
@@ -115,7 +146,7 @@ function calculNumerique() {
         ]),
       }
     },
-    // Puissance négative
+    // 6. Puissance négative
     () => {
       const base = rand(2, 5)
       return {
@@ -130,13 +161,160 @@ function calculNumerique() {
         ]),
       }
     },
+    // 7. Fraction ↔ Décimal ↔ Pourcentage (sujet zéro DNB)
+    () => {
+      const entry = pickFrom(FRAC_DEC_TABLE)
+      const others = FRAC_DEC_TABLE.filter((e) => e.frac !== entry.frac)
+      const direction = rand(0, 2)
+      if (direction === 0) {
+        // fraction → décimal
+        const distractors = shuffle(others).slice(0, 3).map((e) => ({ text: e.dec, correct: false }))
+        return {
+          category: 'Calcul',
+          format: 'qcm',
+          question: `Quelle est l'écriture décimale de ${entry.frac} ?`,
+          choices: shuffle([{ text: entry.dec, correct: true }, ...distractors]),
+        }
+      } else if (direction === 1) {
+        // décimal → fraction
+        const distractors = shuffle(others).slice(0, 3).map((e) => ({ text: e.frac, correct: false }))
+        return {
+          category: 'Calcul',
+          format: 'qcm',
+          question: `Quelle fraction correspond à ${entry.dec} ?`,
+          choices: shuffle([{ text: entry.frac, correct: true }, ...distractors]),
+        }
+      } else {
+        // fraction → pourcentage
+        const distractors = shuffle(others).slice(0, 3).map((e) => ({ text: `${e.pct} %`, correct: false }))
+        return {
+          category: 'Calcul',
+          format: 'qcm',
+          question: `À quel pourcentage correspond ${entry.frac} ?`,
+          choices: shuffle([{ text: `${entry.pct} %`, correct: true }, ...distractors]),
+        }
+      }
+    },
+    // 8. Fraction d'une quantité ("le tiers de", "le quart de"…)
+    () => {
+      const fracs = [
+        { label: 'la moitié', den: 2 },
+        { label: 'le tiers', den: 3 },
+        { label: 'le quart', den: 4 },
+        { label: 'le cinquième', den: 5 },
+        { label: 'le dixième', den: 10 },
+        { label: 'les deux tiers', den: 3, num: 2 },
+        { label: 'les trois quarts', den: 4, num: 3 },
+      ]
+      const f = pickFrom(fracs)
+      const multiplier = rand(2, 10)
+      const total = f.den * multiplier
+      const numerator = f.num || 1
+      const answer = numerator * multiplier
+      return {
+        category: 'Calcul',
+        format: 'input',
+        question: `Combien vaut ${f.label} de ${total} ?`,
+        answer: String(answer),
+        acceptedAnswers: [String(answer)],
+      }
+    },
+    // 9. Nombres relatifs : opérations
+    () => {
+      const a = rand(-12, 12), b = rand(-12, 12)
+      const isAdd = Math.random() < 0.5
+      if (isAdd) {
+        const result = a + b
+        const aStr = a < 0 ? `(${a})` : String(a)
+        const bStr = b < 0 ? `(${b})` : String(b)
+        return {
+          category: 'Calcul',
+          format: 'input',
+          question: `Combien vaut ${aStr} + ${bStr} ?`,
+          answer: String(result),
+          acceptedAnswers: [String(result)],
+        }
+      }
+      const result = a - b
+      const aStr = a < 0 ? `(${a})` : String(a)
+      const bStr = b < 0 ? `(${b})` : String(b)
+      return {
+        category: 'Calcul',
+        format: 'input',
+        question: `Combien vaut ${aStr} − ${bStr} ?`,
+        answer: String(result),
+        acceptedAnswers: [String(result)],
+      }
+    },
+    // 10. Comparer / ordonner des nombres
+    () => {
+      const pool = [
+        ...[-7, -3, -1, 0, 2, 5, 8].map((n) => ({ display: String(n), value: n })),
+        { display: '1/2', value: 0.5 },
+        { display: '1/4', value: 0.25 },
+        { display: '3/4', value: 0.75 },
+        { display: '−1/2', value: -0.5 },
+        { display: '0,1', value: 0.1 },
+        { display: '−0,5', value: -0.5 },
+        { display: '1,5', value: 1.5 },
+      ]
+      const picked = shuffle(pool).slice(0, 4)
+      const askMax = Math.random() < 0.5
+      const target = askMax
+        ? picked.reduce((m, p) => (p.value > m.value ? p : m), picked[0])
+        : picked.reduce((m, p) => (p.value < m.value ? p : m), picked[0])
+      return {
+        category: 'Calcul',
+        format: 'qcm',
+        question: askMax
+          ? `Quel est le plus grand nombre ?\n${picked.map((p) => p.display).join('  ;  ')}`
+          : `Quel est le plus petit nombre ?\n${picked.map((p) => p.display).join('  ;  ')}`,
+        choices: shuffle(
+          picked.map((p) => ({ text: p.display, correct: p === target }))
+        ),
+      }
+    },
+    // 11. Simplifier une fraction
+    () => {
+      const a = rand(2, 10), b = rand(2, 10)
+      const k = rand(2, 6)
+      const num = a * k, den = b * k
+      const g = gcd(num, den)
+      return {
+        category: 'Calcul',
+        format: 'input',
+        question: `Simplifier la fraction ${num}/${den}`,
+        answer: `${num / g}/${den / g}`,
+        acceptedAnswers: [`${num / g}/${den / g}`],
+      }
+    },
+    // 12. Multiplier des fractions
+    () => {
+      const a = rand(1, 5), b = rand(2, 7), c = rand(1, 5), d = rand(2, 7)
+      const num = a * c, den = b * d
+      const g = gcd(num, den)
+      const correct = `${num / g}/${den / g}`
+      return {
+        category: 'Calcul',
+        format: 'qcm',
+        question: `Combien vaut ${a}/${b} × ${c}/${d} ?`,
+        choices: shuffle([
+          { text: correct, correct: true },
+          { text: `${a + c}/${b + d}`, correct: false },
+          { text: `${a * c}/${b + d}`, correct: false },
+          { text: `${a + c}/${b * d}`, correct: false },
+        ]),
+      }
+    },
   ]
   return pickFrom(generators)()
 }
 
+// ─── 2. Calcul littéral (4 générateurs) ─────────────────
+
 function calculLitteral() {
   const generators = [
-    // Développer
+    // 1. Développer
     () => {
       const a = rand(2, 6), b = rand(1, 9)
       return {
@@ -151,7 +329,7 @@ function calculLitteral() {
         ]),
       }
     },
-    // Résoudre équation simple
+    // 2. Résoudre équation simple
     () => {
       const sol = rand(-8, 8)
       const a = rand(2, 7)
@@ -164,7 +342,7 @@ function calculLitteral() {
         acceptedAnswers: [String(sol)],
       }
     },
-    // Identité remarquable (a+b)²
+    // 3. Identité remarquable (a+b)²
     () => {
       const a = rand(1, 5), b = rand(1, 5)
       return {
@@ -179,7 +357,7 @@ function calculLitteral() {
         ]),
       }
     },
-    // Factoriser avec facteur commun
+    // 4. Factoriser avec facteur commun
     () => {
       const k = rand(2, 6), a = rand(1, 9), b = rand(1, 9)
       return {
@@ -198,9 +376,11 @@ function calculLitteral() {
   return pickFrom(generators)()
 }
 
+// ─── 3. Proportionnalité (5 générateurs) ────────────────
+
 function proportionnalite() {
   const generators = [
-    // Pourcentage
+    // 1. Pourcentage direct
     () => {
       const pct = pickFrom([10, 15, 20, 25, 30, 50])
       const base = pickFrom([40, 60, 80, 100, 120, 200, 300])
@@ -213,7 +393,7 @@ function proportionnalite() {
         acceptedAnswers: [String(result)],
       }
     },
-    // Vitesse / distance / temps
+    // 2. Vitesse / distance / temps
     () => {
       const v = pickFrom([30, 40, 50, 60, 80, 100])
       const t = pickFrom([2, 3, 4, 5])
@@ -244,7 +424,7 @@ function proportionnalite() {
         acceptedAnswers: [String(t)],
       }
     },
-    // Échelle
+    // 3. Échelle
     () => {
       const echelle = pickFrom([100, 200, 500, 1000, 2000])
       const plan = rand(2, 15)
@@ -257,13 +437,51 @@ function proportionnalite() {
         acceptedAnswers: [String(reel)],
       }
     },
+    // 4. Augmentation en pourcentage (sujet zéro DNB)
+    () => {
+      const configs = [
+        { base: 80, pct: 25 }, { base: 100, pct: 20 }, { base: 60, pct: 50 },
+        { base: 200, pct: 10 }, { base: 150, pct: 20 }, { base: 40, pct: 25 },
+        { base: 120, pct: 25 }, { base: 500, pct: 10 }, { base: 300, pct: 30 },
+      ]
+      const cfg = pickFrom(configs)
+      const increase = (cfg.base * cfg.pct) / 100
+      const result = cfg.base + increase
+      return {
+        category: 'Proportions',
+        format: 'input',
+        question: `Un article coûte ${cfg.base} €.\nSon prix augmente de ${cfg.pct} %.\nQuel est le nouveau prix (en €) ?`,
+        answer: String(result),
+        acceptedAnswers: [String(result)],
+      }
+    },
+    // 5. Diminution en pourcentage (sujet zéro DNB)
+    () => {
+      const configs = [
+        { base: 120, pct: 25 }, { base: 80, pct: 50 }, { base: 200, pct: 30 },
+        { base: 150, pct: 20 }, { base: 100, pct: 10 }, { base: 60, pct: 50 },
+        { base: 300, pct: 20 }, { base: 400, pct: 25 }, { base: 500, pct: 10 },
+      ]
+      const cfg = pickFrom(configs)
+      const decrease = (cfg.base * cfg.pct) / 100
+      const result = cfg.base - decrease
+      return {
+        category: 'Proportions',
+        format: 'input',
+        question: `Un article coûte ${cfg.base} €.\nSon prix diminue de ${cfg.pct} %.\nQuel est le nouveau prix (en €) ?`,
+        answer: String(result),
+        acceptedAnswers: [String(result)],
+      }
+    },
   ]
   return pickFrom(generators)()
 }
 
+// ─── 4. Probabilités & Statistiques (6 générateurs) ─────
+
 function probabilitesStats() {
   const generators = [
-    // Probabilité simple
+    // 1. Probabilité simple
     () => {
       const total = pickFrom([6, 8, 10, 12, 20])
       const favorable = rand(1, total - 1)
@@ -280,22 +498,35 @@ function probabilitesStats() {
         ]),
       }
     },
-    // Moyenne
+    // 2. Moyenne (FIX: construction déterministe, plus de récursion)
     () => {
       const n = rand(3, 5)
-      const values = Array.from({ length: n }, () => rand(5, 18))
-      const sum = values.reduce((a, b) => a + b, 0)
-      const mean = sum / n
-      if (mean !== Math.floor(mean)) return probabilitesStats() // retry for clean answer
+      const target = rand(8, 15)
+      const values = Array.from({ length: n - 1 }, () => rand(5, 18))
+      const partialSum = values.reduce((a, b) => a + b, 0)
+      const last = target * n - partialSum
+      if (last < 1 || last > 25) {
+        // Fallback sur des valeurs propres
+        const preset = [10, 12, 14]
+        return {
+          category: 'Probas',
+          format: 'input',
+          question: `Quelle est la moyenne de : ${preset.join(' ; ')} ?`,
+          answer: '12',
+          acceptedAnswers: ['12'],
+        }
+      }
+      values.push(last)
+      const displayed = shuffle(values)
       return {
         category: 'Probas',
         format: 'input',
-        question: `Quelle est la moyenne de : ${values.join(' ; ')} ?`,
-        answer: String(mean),
-        acceptedAnswers: [String(mean)],
+        question: `Quelle est la moyenne de : ${displayed.join(' ; ')} ?`,
+        answer: String(target),
+        acceptedAnswers: [String(target)],
       }
     },
-    // Événement contraire
+    // 3. Événement contraire
     () => {
       const pNum = rand(1, 9)
       const pDen = 10
@@ -314,13 +545,85 @@ function probabilitesStats() {
         ]),
       }
     },
+    // 4. Médiane (sujet zéro DNB)
+    () => {
+      const n = pickFrom([5, 7]) // impair → médiane propre
+      const values = Array.from({ length: n }, () => rand(2, 25))
+      const sorted = [...values].sort((a, b) => a - b)
+      const median = sorted[Math.floor(n / 2)]
+      return {
+        category: 'Probas',
+        format: 'input',
+        question: `Quelle est la médiane de la série :\n${shuffle(values).join(' ; ')} ?`,
+        answer: String(median),
+        acceptedAnswers: [String(median)],
+      }
+    },
+    // 5. Étendue (sujet zéro DNB)
+    () => {
+      const n = rand(4, 7)
+      const values = Array.from({ length: n }, () => rand(2, 30))
+      const min = Math.min(...values)
+      const max = Math.max(...values)
+      const etendue = max - min
+      return {
+        category: 'Probas',
+        format: 'input',
+        question: `Quelle est l'étendue de la série :\n${values.join(' ; ')} ?`,
+        answer: String(etendue),
+        acceptedAnswers: [String(etendue)],
+      }
+    },
+    // 6. Équiprobabilité (sujet zéro DNB)
+    () => {
+      const scenarios = [
+        {
+          q: 'On lance un dé équilibré à 6 faces.\nQuelle est la probabilité d\'obtenir un nombre pair ?',
+          answer: '3/6', simplified: '1/2',
+        },
+        {
+          q: 'On lance un dé équilibré à 6 faces.\nQuelle est la probabilité d\'obtenir un 6 ?',
+          answer: '1/6', simplified: '1/6',
+        },
+        {
+          q: 'On lance un dé équilibré à 6 faces.\nQuelle est la probabilité d\'obtenir un nombre supérieur à 4 ?',
+          answer: '2/6', simplified: '1/3',
+        },
+        {
+          q: 'On lance une pièce équilibrée.\nQuelle est la probabilité d\'obtenir pile ?',
+          answer: '1/2', simplified: '1/2',
+        },
+        {
+          q: 'On lance un dé équilibré à 6 faces.\nQuelle est la probabilité d\'obtenir un nombre impair ?',
+          answer: '3/6', simplified: '1/2',
+        },
+        {
+          q: 'Un sac contient 3 boules rouges et 2 boules bleues.\nQuelle est la probabilité de tirer une boule bleue ?',
+          answer: '2/5', simplified: '2/5',
+        },
+      ]
+      const s = pickFrom(scenarios)
+      const wrongAnswers = ['1/4', '1/3', '2/3', '1/6', '5/6', '1/2', '2/5', '3/5']
+        .filter((w) => w !== s.simplified && w !== s.answer)
+      return {
+        category: 'Probas',
+        format: 'qcm',
+        question: s.q,
+        choices: shuffle([
+          { text: s.simplified, correct: true },
+          ...shuffle(wrongAnswers).slice(0, 3).map((w) => ({ text: w, correct: false })),
+        ]),
+      }
+    },
   ]
   return pickFrom(generators)()
 }
 
+// ─── 5. Géométrie (15 générateurs) ──────────────────────
+
 function geometrie() {
   const generators = [
-    // Aire rectangle
+    // 1. Aire rectangle
     () => {
       const l = rand(3, 12), w = rand(2, 10)
       return {
@@ -331,7 +634,7 @@ function geometrie() {
         acceptedAnswers: [String(l * w)],
       }
     },
-    // Périmètre cercle
+    // 2. Périmètre cercle
     () => {
       const r = rand(2, 10)
       const d = 2 * r
@@ -347,7 +650,7 @@ function geometrie() {
         ]),
       }
     },
-    // Volume cube
+    // 3. Volume cube
     () => {
       const c = rand(2, 8)
       return {
@@ -358,7 +661,7 @@ function geometrie() {
         acceptedAnswers: [String(c ** 3)],
       }
     },
-    // Angles d'un triangle
+    // 4. Angles d'un triangle
     () => {
       const a = rand(30, 80), b = rand(20, 150 - a)
       const c = 180 - a - b
@@ -370,7 +673,7 @@ function geometrie() {
         acceptedAnswers: [String(c)],
       }
     },
-    // Aire triangle
+    // 5. Aire triangle
     () => {
       const base = pickFrom([4, 6, 8, 10, 12])
       const h = pickFrom([3, 5, 6, 7, 8])
@@ -383,7 +686,7 @@ function geometrie() {
         acceptedAnswers: [String(aire)],
       }
     },
-    // Angles alternes-internes / correspondants
+    // 6. Angles alternes-internes
     () => {
       const angle = rand(30, 150)
       return {
@@ -393,13 +696,169 @@ function geometrie() {
         answer: true,
       }
     },
+    // 7. Aire du disque (sujet zéro DNB)
+    () => {
+      const r = rand(2, 8)
+      const rSquared = r * r
+      return {
+        category: 'Géométrie',
+        format: 'qcm',
+        question: `Quelle est l'aire d'un disque de rayon ${r} cm ?`,
+        choices: shuffle([
+          { text: `${rSquared}π cm²`, correct: true },
+          { text: `${2 * r}π cm²`, correct: false },
+          { text: `${r}π cm²`, correct: false },
+          { text: `${rSquared * 2}π cm²`, correct: false },
+        ]),
+      }
+    },
+    // 8. Volume pavé droit (sujet zéro DNB)
+    () => {
+      const l = rand(2, 8), w = rand(2, 6), h = rand(2, 6)
+      return {
+        category: 'Géométrie',
+        format: 'input',
+        question: `Volume d'un pavé droit de ${l} cm, ${w} cm et ${h} cm (en cm³) ?`,
+        answer: String(l * w * h),
+        acceptedAnswers: [String(l * w * h)],
+      }
+    },
+    // 9. Volume cylindre (sujet zéro DNB)
+    () => {
+      const r = rand(2, 6), h = rand(2, 8)
+      const rSquared = r * r
+      const coeff = rSquared * h
+      return {
+        category: 'Géométrie',
+        format: 'qcm',
+        question: `Volume d'un cylindre de rayon ${r} cm et hauteur ${h} cm ?`,
+        choices: shuffle([
+          { text: `${coeff}π cm³`, correct: true },
+          { text: `${2 * r * h}π cm³`, correct: false },
+          { text: `${rSquared}π cm³`, correct: false },
+          { text: `${r * h}π cm³`, correct: false },
+        ]),
+      }
+    },
+    // 10. Angles opposés par le sommet (sujet zéro DNB)
+    () => {
+      const angle = rand(20, 160)
+      const isSame = Math.random() < 0.6
+      const stated = isSame ? angle : angle + pickFrom([5, 10, 15, -5, -10])
+      return {
+        category: 'Géométrie',
+        format: 'vraifaux',
+        question: `Deux angles sont opposés par le sommet.\nL'un mesure ${angle}°, l'autre mesure ${stated}°.`,
+        answer: isSame,
+      }
+    },
+    // 11. Angles supplémentaires (sujet zéro DNB)
+    () => {
+      const a = rand(20, 160)
+      const answer = 180 - a
+      return {
+        category: 'Géométrie',
+        format: 'input',
+        question: `Deux angles sont supplémentaires.\nL'un mesure ${a}°. Combien mesure l'autre (en °) ?`,
+        answer: String(answer),
+        acceptedAnswers: [String(answer)],
+      }
+    },
+    // 12. Angles complémentaires (sujet zéro DNB)
+    () => {
+      const a = rand(5, 85)
+      const answer = 90 - a
+      return {
+        category: 'Géométrie',
+        format: 'input',
+        question: `Deux angles sont complémentaires.\nL'un mesure ${a}°. Combien mesure l'autre (en °) ?`,
+        answer: String(answer),
+        acceptedAnswers: [String(answer)],
+      }
+    },
+    // 13. Conversions d'unités (sujet zéro DNB)
+    () => {
+      const conversions = [
+        { q: (v) => `Convertir ${v} m en cm.`, mult: 100, range: [1, 15] },
+        { q: (v) => `Convertir ${v} cm en mm.`, mult: 10, range: [1, 30] },
+        { q: (v) => `Convertir ${v} km en m.`, mult: 1000, range: [1, 10] },
+        { q: (v) => `Convertir ${v} L en mL.`, mult: 1000, range: [1, 5] },
+        { q: (v) => `Convertir ${v} L en cL.`, mult: 100, range: [1, 8] },
+        { q: (v) => `Convertir ${v} kg en g.`, mult: 1000, range: [1, 10] },
+        { q: (v) => `Convertir ${v} h en min.`, mult: 60, range: [1, 5] },
+        { q: (v) => `Un film dure ${v} min. Combien d'heures ?`, mult: 1, range: [60, 300], div: 60 },
+      ]
+      const conv = pickFrom(conversions)
+      const val = rand(conv.range[0], conv.range[1])
+      if (conv.div) {
+        // Division case — ensure clean result
+        const cleanVal = conv.div * rand(1, 5)
+        return {
+          category: 'Géométrie',
+          format: 'input',
+          question: conv.q(cleanVal),
+          answer: String(cleanVal / conv.div),
+          acceptedAnswers: [String(cleanVal / conv.div)],
+        }
+      }
+      const result = val * conv.mult
+      return {
+        category: 'Géométrie',
+        format: 'input',
+        question: conv.q(val),
+        answer: String(result),
+        acceptedAnswers: [String(result)],
+      }
+    },
+    // 14. Symétrie axiale — propriétés (sujet zéro DNB)
+    () => {
+      const statements = [
+        { text: 'La symétrie axiale conserve les longueurs.', answer: true },
+        { text: 'La symétrie axiale conserve les angles.', answer: true },
+        { text: 'La symétrie axiale conserve les aires.', answer: true },
+        { text: 'Un cercle a exactement un axe de symétrie.', answer: false },
+        { text: 'Un carré a exactement 4 axes de symétrie.', answer: true },
+        { text: 'Un rectangle (non carré) a exactement 2 axes de symétrie.', answer: true },
+        { text: 'Un triangle équilatéral a exactement 3 axes de symétrie.', answer: true },
+        { text: 'La symétrie axiale transforme une droite en une droite parallèle.', answer: false },
+      ]
+      const s = pickFrom(statements)
+      return {
+        category: 'Géométrie',
+        format: 'vraifaux',
+        question: s.text,
+        answer: s.answer,
+      }
+    },
+    // 15. Symétrie centrale — propriétés (sujet zéro DNB)
+    () => {
+      const statements = [
+        { text: 'La symétrie centrale conserve les longueurs.', answer: true },
+        { text: 'La symétrie centrale conserve les angles.', answer: true },
+        { text: 'Par une symétrie centrale, l\'image d\'un segment est un segment parallèle de même longueur.', answer: true },
+        { text: 'Un parallélogramme a un centre de symétrie.', answer: true },
+        { text: 'Un triangle équilatéral a un centre de symétrie.', answer: false },
+        { text: 'Un cercle a un centre de symétrie : son centre.', answer: true },
+        { text: 'La symétrie centrale conserve les aires.', answer: true },
+        { text: 'Un rectangle a un centre de symétrie.', answer: true },
+      ]
+      const s = pickFrom(statements)
+      return {
+        category: 'Géométrie',
+        format: 'vraifaux',
+        question: s.text,
+        answer: s.answer,
+      }
+    },
   ]
   return pickFrom(generators)()
 }
 
+// ─── 6. Fonctions (5 générateurs) ───────────────────────
+
 function fonctions() {
   const generators = [
-    // Image par une fonction
+    // 1. Image par une fonction
     () => {
       const a = rand(2, 6), b = rand(-8, 8)
       const x = rand(-5, 5)
@@ -413,7 +872,7 @@ function fonctions() {
         acceptedAnswers: [String(y)],
       }
     },
-    // Antécédent
+    // 2. Antécédent
     () => {
       const a = rand(2, 5), b = rand(-5, 5)
       const x = rand(-4, 6)
@@ -427,7 +886,7 @@ function fonctions() {
         acceptedAnswers: [String(x)],
       }
     },
-    // Lecture graphique coefficient directeur
+    // 3. Sens de variation
     () => {
       const a = pickFrom([1, 2, 3, -1, -2, -3])
       const nature = a > 0 ? 'croissante' : 'décroissante'
@@ -438,22 +897,134 @@ function fonctions() {
         answer: true,
       }
     },
+    // 4. Coordonnées : lire un point (sujet zéro DNB)
+    () => {
+      const px = rand(-6, 6), py = rand(-6, 6)
+      const askAbscisse = Math.random() < 0.5
+      const asked = askAbscisse ? 'abscisse' : 'ordonnée'
+      const correct = askAbscisse ? px : py
+      const wrong = askAbscisse ? py : px
+      return {
+        category: 'Fonctions',
+        format: 'qcm',
+        question: `Le point A a pour coordonnées (${px} ; ${py}).\nQuelle est l'${asked} de A ?`,
+        choices: shuffle([
+          { text: String(correct), correct: true },
+          { text: String(wrong), correct: false },
+          { text: String(-correct), correct: false },
+          { text: String(correct + pickFrom([1, -1, 2])), correct: false },
+        ]),
+      }
+    },
+    // 5. Lecture graphique (sujet zéro DNB)
+    () => {
+      const x0 = rand(-3, 5), y0 = rand(-4, 8)
+      const variant = rand(0, 1)
+      if (variant === 0) {
+        return {
+          category: 'Fonctions',
+          format: 'qcm',
+          question: `Le graphique d'une fonction f passe par le point (${x0} ; ${y0}).\nQuelle est l'image de ${x0} par f ?`,
+          choices: shuffle([
+            { text: String(y0), correct: true },
+            { text: String(x0), correct: false },
+            { text: String(-y0), correct: false },
+            { text: String(y0 + pickFrom([1, 2, -1])), correct: false },
+          ]),
+        }
+      }
+      return {
+        category: 'Fonctions',
+        format: 'qcm',
+        question: `Le graphique d'une fonction f passe par le point (${x0} ; ${y0}).\nDonner un antécédent de ${y0} par f.`,
+        choices: shuffle([
+          { text: String(x0), correct: true },
+          { text: String(y0), correct: false },
+          { text: String(-x0), correct: false },
+          { text: String(x0 + pickFrom([1, 2, -1])), correct: false },
+        ]),
+      }
+    },
   ]
   return pickFrom(generators)()
 }
 
-// ─── Utilities ──────────────────────────────────────────
+// ─── 7. Algorithmique (2 générateurs) ───────────────────
 
-function gcd(a, b) {
-  a = Math.abs(a); b = Math.abs(b)
-  while (b) { [a, b] = [b, a % b] }
-  return a
-}
-
-function superChar(n) {
-  const map = { '-': '\u207B', '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3',
-    '4': '\u2074', '5': '\u2075', '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079' }
-  return String(n).split('').map(c => map[c] || c).join('')
+function algorithmique() {
+  const generators = [
+    // 1. Formule tableur (sujet zéro DNB)
+    () => {
+      const a1 = rand(2, 10), b1 = rand(2, 10)
+      const formulas = [
+        { formula: '=A1+B1', result: a1 + b1 },
+        { formula: '=A1*B1', result: a1 * b1 },
+        { formula: '=A1+B1*2', result: a1 + b1 * 2 },
+        { formula: '=A1*2+B1', result: a1 * 2 + b1 },
+        { formula: '=(A1+B1)*2', result: (a1 + b1) * 2 },
+        { formula: '=A1*B1-A1', result: a1 * b1 - a1 },
+      ]
+      const op = pickFrom(formulas)
+      const wrongs = new Set()
+      while (wrongs.size < 3) {
+        const w = op.result + pickFrom([-5, -3, -2, -1, 1, 2, 3, 5, 7])
+        if (w !== op.result && w > 0) wrongs.add(w)
+      }
+      return {
+        category: 'Algo',
+        format: 'qcm',
+        question: `Tableur : A1 = ${a1}, B1 = ${b1}.\nQue contient C1 si la formule est ${op.formula} ?`,
+        choices: shuffle([
+          { text: String(op.result), correct: true },
+          ...[...wrongs].map((w) => ({ text: String(w), correct: false })),
+        ]),
+      }
+    },
+    // 2. Script Scratch (sujet zéro DNB)
+    () => {
+      const variant = rand(0, 2)
+      if (variant === 0) {
+        // Addition dans une boucle
+        const init = rand(0, 5)
+        const step = rand(2, 5)
+        const repeats = rand(3, 6)
+        const result = init + step * repeats
+        return {
+          category: 'Algo',
+          format: 'input',
+          question: `Programme Scratch :\nMettre x à ${init}\nRépéter ${repeats} fois :\n    Ajouter ${step} à x\nQuelle est la valeur de x ?`,
+          answer: String(result),
+          acceptedAnswers: [String(result)],
+        }
+      } else if (variant === 1) {
+        // Soustraction dans une boucle
+        const init = rand(20, 40)
+        const step = rand(2, 5)
+        const repeats = rand(3, 6)
+        const result = init - step * repeats
+        return {
+          category: 'Algo',
+          format: 'input',
+          question: `Programme Scratch :\nMettre x à ${init}\nRépéter ${repeats} fois :\n    Retirer ${step} à x\nQuelle est la valeur de x ?`,
+          answer: String(result),
+          acceptedAnswers: [String(result)],
+        }
+      }
+      // Programme de calcul textuel
+      const start = rand(1, 6)
+      const mult = rand(2, 4)
+      const add = rand(1, 10)
+      const result = start * mult + add
+      return {
+        category: 'Algo',
+        format: 'input',
+        question: `Programme de calcul :\n• Choisir ${start}\n• Multiplier par ${mult}\n• Ajouter ${add}\nQuel est le résultat ?`,
+        answer: String(result),
+        acceptedAnswers: [String(result)],
+      }
+    },
+  ]
+  return pickFrom(generators)()
 }
 
 // ─── Public API ─────────────────────────────────────────
@@ -465,25 +1036,37 @@ const CATEGORIES = [
   probabilitesStats,
   geometrie,
   fonctions,
+  algorithmique,
 ]
 
 /**
- * Generate a full session of N questions, balanced across categories.
+ * Generate a balanced session of N questions.
+ * FIX: Round-robin complet + remplissage aléatoire (plus de biais).
  */
 export function generateSession(count = 10) {
   const questions = []
-  for (let i = 0; i < count; i++) {
-    const gen = CATEGORIES[i % CATEGORIES.length]
-    questions.push(gen())
+  // Phase 1 : un round complet (1 question par catégorie)
+  const fullRounds = Math.floor(count / CATEGORIES.length)
+  for (let r = 0; r < fullRounds; r++) {
+    for (const gen of CATEGORIES) {
+      questions.push(gen())
+    }
+  }
+  // Phase 2 : combler le reste avec des catégories tirées au sort
+  const remaining = count - questions.length
+  const extra = shuffle([...Array(CATEGORIES.length).keys()]).slice(0, remaining)
+  for (const idx of extra) {
+    questions.push(CATEGORIES[idx]())
   }
   return shuffle(questions)
 }
 
 /**
  * Check if a user answer matches the expected answer.
+ * FIX: normalise π/pi pour les réponses avec π.
  */
 export function checkAnswer(question, userAnswer) {
-  const clean = userAnswer.trim().replace(',', '.').replace(/\s/g, '')
+  const clean = userAnswer.trim().replace(',', '.').replace(/\s/g, '').replace(/π/g, 'pi')
 
   if (question.format === 'qcm') {
     return question.choices.find((c) => c.correct)?.text === userAnswer
@@ -497,12 +1080,12 @@ export function checkAnswer(question, userAnswer) {
   // Input format
   if (question.acceptedAnswers) {
     return question.acceptedAnswers.some((a) => {
-      const expected = a.replace(',', '.').replace(/\s/g, '')
+      const expected = a.replace(',', '.').replace(/\s/g, '').replace(/π/g, 'pi')
       return clean === expected
     })
   }
 
-  return clean === String(question.answer).replace(',', '.')
+  return clean === String(question.answer).replace(',', '.').replace(/π/g, 'pi')
 }
 
 export const CATEGORY_COLORS = {
@@ -512,4 +1095,5 @@ export const CATEGORY_COLORS = {
   Probas: 'bg-pink-500/20 text-pink-400',
   Géométrie: 'bg-purple-500/20 text-purple-400',
   Fonctions: 'bg-cyan-500/20 text-cyan-400',
+  Algo: 'bg-orange-500/20 text-orange-400',
 }
