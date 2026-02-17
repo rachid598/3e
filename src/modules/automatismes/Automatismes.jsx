@@ -1,19 +1,18 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import {
   ArrowLeft, Star, RotateCcw, Trophy, Timer, ChevronRight,
-  CheckCircle, XCircle, Brain,
+  CheckCircle, XCircle, Brain, Zap,
 } from 'lucide-react'
 import { generateSession, checkAnswer, CATEGORY_COLORS } from './engine'
 import QcmChoices from './components/QcmChoices'
 import VraiFauxButtons from './components/VraiFauxButtons'
 import AnswerInput from './components/AnswerInput'
-import TimerBar from './components/TimerBar'
-import { fireSuccess, fireBigWin } from '../../utils/confetti'
+import { fireSuccess, fireSpeedBonus, fireBigWin } from '../../utils/confetti'
 
 const MODES = {
-  flash: { label: 'Flash', desc: '10 questions, 30 s chacune', count: 10, time: 30000 },
-  brevet: { label: 'Mode Brevet', desc: '20 questions, 3 min', count: 20, time: 9000 },
-  zen: { label: 'Zen', desc: '10 questions, sans chrono', count: 10, time: null },
+  flash: { label: 'Flash', desc: '10 questions', count: 10 },
+  brevet: { label: 'Mode Brevet', desc: '20 questions', count: 20 },
+  zen: { label: 'Zen', desc: '10 questions', count: 10 },
 }
 
 export default function Automatismes({ onBack }) {
@@ -26,8 +25,7 @@ export default function Automatismes({ onBack }) {
   const [vraiSelected, setVraiSelected] = useState(null)
   const [results, setResults] = useState([])
   const [showResult, setShowResult] = useState(false)
-  const [timerRunning, setTimerRunning] = useState(false)
-  const [timerKey, setTimerKey] = useState(0)
+  const questionStartRef = useRef(0)
 
   const startMode = useCallback((modeKey) => {
     const cfg = MODES[modeKey]
@@ -41,8 +39,7 @@ export default function Automatismes({ onBack }) {
     setVraiSelected(null)
     setResults([])
     setShowResult(false)
-    setTimerRunning(!!cfg.time)
-    setTimerKey((k) => k + 1)
+    questionStartRef.current = Date.now()
   }, [])
 
   const currentQ = questions[qIndex]
@@ -51,7 +48,7 @@ export default function Automatismes({ onBack }) {
   const doValidate = useCallback(
     (answer) => {
       if (!currentQ || feedback) return
-      setTimerRunning(false)
+      const elapsed = (Date.now() - questionStartRef.current) / 1000
 
       let isCorrect = false
       if (currentQ.format === 'qcm') {
@@ -63,12 +60,16 @@ export default function Automatismes({ onBack }) {
       }
 
       if (isCorrect) {
-        fireSuccess()
+        if (elapsed < 3) {
+          fireSpeedBonus()
+        } else {
+          fireSuccess()
+        }
         setScore((s) => s + 1)
       }
 
-      setFeedback({ correct: isCorrect })
-      setResults((r) => [...r, { question: currentQ, userAnswer: answer, correct: isCorrect }])
+      setFeedback({ correct: isCorrect, elapsed })
+      setResults((r) => [...r, { question: currentQ, userAnswer: answer, correct: isCorrect, elapsed }])
     },
     [currentQ, feedback]
   )
@@ -86,16 +87,6 @@ export default function Automatismes({ onBack }) {
     }
   }, [currentQ, userAnswer, vraiSelected, doValidate])
 
-  const handleTimeUp = useCallback(() => {
-    if (feedback) return
-    setTimerRunning(false)
-    setFeedback({ correct: false })
-    setResults((r) => [
-      ...r,
-      { question: currentQ, userAnswer: '(temps écoulé)', correct: false },
-    ])
-  }, [feedback, currentQ])
-
   const handleNext = useCallback(() => {
     const next = qIndex + 1
     if (next >= questions.length) {
@@ -107,11 +98,8 @@ export default function Automatismes({ onBack }) {
     setFeedback(null)
     setUserAnswer('')
     setVraiSelected(null)
-    if (cfg?.time) {
-      setTimerRunning(true)
-      setTimerKey((k) => k + 1)
-    }
-  }, [qIndex, questions.length, score, cfg])
+    questionStartRef.current = Date.now()
+  }, [qIndex, questions.length, score])
 
   // ─── Mode selection ───────────────────────────────────
   if (mode === null) {
@@ -271,18 +259,6 @@ export default function Automatismes({ onBack }) {
         </div>
       </div>
 
-      {/* Timer */}
-      {cfg.time && (
-        <div className="mb-4">
-          <TimerBar
-            key={timerKey}
-            durationMs={cfg.time}
-            running={timerRunning}
-            onTimeUp={handleTimeUp}
-          />
-        </div>
-      )}
-
       {/* Progress dots */}
       <div className="mx-auto mb-4 flex max-w-lg justify-center gap-1">
         {questions.map((_, i) => (
@@ -359,7 +335,13 @@ export default function Automatismes({ onBack }) {
                   : 'bg-red-500/20 text-red-400'
               }`}
             >
-              {feedback.correct ? 'Bonne réponse !' : 'Mauvaise réponse'}
+              {feedback.correct
+                ? feedback.elapsed < 3
+                  ? <span className="flex items-center justify-center gap-1"><Zap className="h-4 w-4" /> Ultra rapide !</span>
+                  : feedback.elapsed < 6
+                    ? <span className="flex items-center justify-center gap-1"><Zap className="h-4 w-4" /> Rapide !</span>
+                    : 'Bonne réponse !'
+                : 'Mauvaise réponse'}
             </div>
           )}
 

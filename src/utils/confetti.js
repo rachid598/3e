@@ -9,6 +9,15 @@ export function fireSuccess() {
   })
 }
 
+export function fireSpeedBonus() {
+  confetti({
+    particleCount: 150,
+    spread: 90,
+    origin: { y: 0.6 },
+    colors: ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'],
+  })
+}
+
 export function fireBigWin() {
   const end = Date.now() + 800
   ;(function frame() {
