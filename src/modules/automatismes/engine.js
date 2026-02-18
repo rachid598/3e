@@ -284,6 +284,21 @@ function calculNumerique() {
         acceptedAnswers: [String(result)],
       }
     },
+    // 9b. Multiplication de relatifs
+    () => {
+      let a = rand(-9, 9), b = rand(-9, 9)
+      while (a === 0 || b === 0 || a === 1 || b === 1) { a = rand(-9, 9); b = rand(-9, 9) }
+      const result = a * b
+      const aStr = a < 0 ? `(${a})` : String(a)
+      const bStr = b < 0 ? `(${b})` : String(b)
+      return {
+        category: 'Calcul',
+        format: 'input',
+        question: `Combien vaut ${aStr} \u00d7 ${bStr} ?`,
+        answer: String(result),
+        acceptedAnswers: [String(result)],
+      }
+    },
     // 10. Comparer / ordonner des nombres
     () => {
       const pool = [
@@ -848,6 +863,62 @@ function geometrie() {
         acceptedAnswers: [String(result)],
       }
     },
+    // 13b. Conversions d'aires
+    () => {
+      const conversions = [
+        { q: (v) => `Convertir ${v} m\u00b2 en dm\u00b2.`, mult: 100, range: [1, 5] },
+        { q: (v) => `Convertir ${v} dm\u00b2 en cm\u00b2.`, mult: 100, range: [1, 5] },
+        { q: (v) => `Convertir ${v} cm\u00b2 en mm\u00b2.`, mult: 100, range: [1, 5] },
+        { q: (v) => `${v * 100} dm\u00b2 = ? m\u00b2`, mult: 1, range: [1, 5], isDivision: true, divisor: 100 },
+        { q: (v) => `${v * 100} cm\u00b2 = ? dm\u00b2`, mult: 1, range: [1, 5], isDivision: true, divisor: 100 },
+      ]
+      const conv = pickFrom(conversions)
+      const val = rand(conv.range[0], conv.range[1])
+      if (conv.isDivision) {
+        return {
+          category: 'Géométrie',
+          format: 'input',
+          question: conv.q(val),
+          answer: String(val),
+          acceptedAnswers: [String(val)],
+        }
+      }
+      return {
+        category: 'Géométrie',
+        format: 'input',
+        question: conv.q(val),
+        answer: String(val * conv.mult),
+        acceptedAnswers: [String(val * conv.mult)],
+      }
+    },
+    // 13c. Conversions de volumes
+    () => {
+      const conversions = [
+        { q: (v) => `Convertir ${v} m\u00b3 en dm\u00b3.`, mult: 1000, range: [1, 3] },
+        { q: (v) => `Convertir ${v} dm\u00b3 en cm\u00b3.`, mult: 1000, range: [1, 3] },
+        { q: (v) => `Convertir ${v} dm\u00b3 en L.`, mult: 1, range: [1, 10] },
+        { q: (v) => `${v * 1000} cm\u00b3 = ? dm\u00b3`, mult: 1, range: [1, 3], isDivision: true, divisor: 1000 },
+        { q: (v) => `${v * 1000} dm\u00b3 = ? m\u00b3`, mult: 1, range: [1, 3], isDivision: true, divisor: 1000 },
+      ]
+      const conv = pickFrom(conversions)
+      const val = rand(conv.range[0], conv.range[1])
+      if (conv.isDivision) {
+        return {
+          category: 'Géométrie',
+          format: 'input',
+          question: conv.q(val),
+          answer: String(val),
+          acceptedAnswers: [String(val)],
+        }
+      }
+      return {
+        category: 'Géométrie',
+        format: 'input',
+        question: conv.q(val),
+        answer: String(val * conv.mult),
+        acceptedAnswers: [String(val * conv.mult)],
+      }
+    },
     // 14. Symétrie axiale — propriétés (sujet zéro DNB)
     () => {
       const statements = [
@@ -1125,6 +1196,178 @@ export function checkAnswer(question, userAnswer) {
 
   return clean === String(question.answer).replace(',', '.').replace(/π/g, 'pi')
 }
+
+/**
+ * Generate a custom session from a specific set of generators.
+ * Used by special modes (e.g., Relatifs & Conversions).
+ */
+export function generateCustomSession(count, generators) {
+  const questions = []
+  const fullRounds = Math.floor(count / generators.length)
+  for (let r = 0; r < fullRounds; r++) {
+    for (const gen of generators) {
+      questions.push(gen())
+    }
+  }
+  const remaining = count - questions.length
+  const extra = shuffle([...Array(generators.length).keys()]).slice(0, remaining)
+  for (const idx of extra) {
+    questions.push(generators[idx]())
+  }
+  return shuffle(questions)
+}
+
+// ─── Générateurs standalone pour le mode spécial ─────────
+
+function genRelatifsAddSub() {
+  const a = rand(-12, 12), b = rand(-12, 12)
+  const isAdd = Math.random() < 0.5
+  const result = isAdd ? a + b : a - b
+  const aStr = a < 0 ? `(${a})` : String(a)
+  const bStr = b < 0 ? `(${b})` : String(b)
+  return {
+    category: 'Calcul',
+    format: 'input',
+    question: `Combien vaut ${aStr} ${isAdd ? '+' : '\u2212'} ${bStr} ?`,
+    answer: String(result),
+    acceptedAnswers: [String(result)],
+  }
+}
+
+function genRelatifsMult() {
+  let a = rand(-9, 9), b = rand(-9, 9)
+  while (a === 0 || b === 0 || a === 1 || b === 1) { a = rand(-9, 9); b = rand(-9, 9) }
+  const result = a * b
+  const aStr = a < 0 ? `(${a})` : String(a)
+  const bStr = b < 0 ? `(${b})` : String(b)
+  return {
+    category: 'Calcul',
+    format: 'input',
+    question: `Combien vaut ${aStr} \u00d7 ${bStr} ?`,
+    answer: String(result),
+    acceptedAnswers: [String(result)],
+  }
+}
+
+function genConversionsLongueur() {
+  const conversions = [
+    { q: (v) => `Convertir ${v} m en cm.`, mult: 100, range: [1, 15] },
+    { q: (v) => `Convertir ${v} cm en mm.`, mult: 10, range: [1, 30] },
+    { q: (v) => `Convertir ${v} km en m.`, mult: 1000, range: [1, 10] },
+    { q: (v) => `${v * 100} cm = ? m`, mult: 1, range: [1, 10], isDivision: true },
+    { q: (v) => `${v * 1000} m = ? km`, mult: 1, range: [1, 10], isDivision: true },
+  ]
+  const conv = pickFrom(conversions)
+  const val = rand(conv.range[0], conv.range[1])
+  if (conv.isDivision) {
+    return {
+      category: 'Géométrie',
+      format: 'input',
+      question: conv.q(val),
+      answer: String(val),
+      acceptedAnswers: [String(val)],
+    }
+  }
+  return {
+    category: 'Géométrie',
+    format: 'input',
+    question: conv.q(val),
+    answer: String(val * conv.mult),
+    acceptedAnswers: [String(val * conv.mult)],
+  }
+}
+
+function genConversionsAire() {
+  const conversions = [
+    { q: (v) => `Convertir ${v} m\u00b2 en dm\u00b2.`, mult: 100, range: [1, 5] },
+    { q: (v) => `Convertir ${v} dm\u00b2 en cm\u00b2.`, mult: 100, range: [1, 5] },
+    { q: (v) => `Convertir ${v} cm\u00b2 en mm\u00b2.`, mult: 100, range: [1, 5] },
+    { q: (v) => `${v * 100} dm\u00b2 = ? m\u00b2`, mult: 1, range: [1, 5], isDivision: true },
+    { q: (v) => `${v * 100} cm\u00b2 = ? dm\u00b2`, mult: 1, range: [1, 5], isDivision: true },
+  ]
+  const conv = pickFrom(conversions)
+  const val = rand(conv.range[0], conv.range[1])
+  if (conv.isDivision) {
+    return {
+      category: 'Géométrie',
+      format: 'input',
+      question: conv.q(val),
+      answer: String(val),
+      acceptedAnswers: [String(val)],
+    }
+  }
+  return {
+    category: 'Géométrie',
+    format: 'input',
+    question: conv.q(val),
+    answer: String(val * conv.mult),
+    acceptedAnswers: [String(val * conv.mult)],
+  }
+}
+
+function genConversionsVolume() {
+  const conversions = [
+    { q: (v) => `Convertir ${v} m\u00b3 en dm\u00b3.`, mult: 1000, range: [1, 3] },
+    { q: (v) => `Convertir ${v} dm\u00b3 en cm\u00b3.`, mult: 1000, range: [1, 3] },
+    { q: (v) => `${v * 1000} cm\u00b3 = ? dm\u00b3`, mult: 1, range: [1, 3], isDivision: true },
+    { q: (v) => `${v * 1000} dm\u00b3 = ? m\u00b3`, mult: 1, range: [1, 3], isDivision: true },
+  ]
+  const conv = pickFrom(conversions)
+  const val = rand(conv.range[0], conv.range[1])
+  if (conv.isDivision) {
+    return {
+      category: 'Géométrie',
+      format: 'input',
+      question: conv.q(val),
+      answer: String(val),
+      acceptedAnswers: [String(val)],
+    }
+  }
+  return {
+    category: 'Géométrie',
+    format: 'input',
+    question: conv.q(val),
+    answer: String(val * conv.mult),
+    acceptedAnswers: [String(val * conv.mult)],
+  }
+}
+
+function genConversionsContenance() {
+  const conversions = [
+    { q: (v) => `Convertir ${v} L en mL.`, mult: 1000, range: [1, 5] },
+    { q: (v) => `Convertir ${v} L en cL.`, mult: 100, range: [1, 8] },
+    { q: (v) => `Convertir ${v} dm\u00b3 en L.`, mult: 1, range: [1, 10] },
+    { q: (v) => `${v * 1000} mL = ? L`, mult: 1, range: [1, 5], isDivision: true },
+    { q: (v) => `${v * 100} cL = ? L`, mult: 1, range: [1, 8], isDivision: true },
+  ]
+  const conv = pickFrom(conversions)
+  const val = rand(conv.range[0], conv.range[1])
+  if (conv.isDivision) {
+    return {
+      category: 'Géométrie',
+      format: 'input',
+      question: conv.q(val),
+      answer: String(val),
+      acceptedAnswers: [String(val)],
+    }
+  }
+  return {
+    category: 'Géométrie',
+    format: 'input',
+    question: conv.q(val),
+    answer: String(val * conv.mult),
+    acceptedAnswers: [String(val * conv.mult)],
+  }
+}
+
+export const SPECIAL_RELATIFS_CONVERSIONS = [
+  genRelatifsAddSub,
+  genRelatifsMult,
+  genConversionsLongueur,
+  genConversionsAire,
+  genConversionsVolume,
+  genConversionsContenance,
+]
 
 export const CATEGORY_COLORS = {
   Calcul: 'bg-amber-500/20 text-amber-400',

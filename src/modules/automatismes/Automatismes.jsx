@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef } from 'react'
 import {
   ArrowLeft, Star, RotateCcw, Trophy, Timer, ChevronRight,
-  CheckCircle, XCircle, Brain, Zap,
+  CheckCircle, XCircle, Brain, Zap, Ruler,
 } from 'lucide-react'
-import { generateSession, checkAnswer, CATEGORY_COLORS } from './engine'
+import { generateSession, generateCustomSession, checkAnswer, CATEGORY_COLORS, SPECIAL_RELATIFS_CONVERSIONS } from './engine'
 import QcmChoices from './components/QcmChoices'
 import VraiFauxButtons from './components/VraiFauxButtons'
 import AnswerInput from './components/AnswerInput'
@@ -13,6 +13,12 @@ const MODES = {
   flash: { label: 'Flash', desc: '10 questions', count: 10 },
   brevet: { label: 'Mode Brevet', desc: '20 questions', count: 20 },
   zen: { label: 'Zen', desc: '10 questions', count: 10 },
+  'relatifs-conversions': {
+    label: 'Relatifs & Conversions',
+    desc: 'Relatifs (+,\u2212,\u00d7) et conversions',
+    count: 15,
+    custom: SPECIAL_RELATIFS_CONVERSIONS,
+  },
 }
 
 export default function Automatismes({ onBack }) {
@@ -29,7 +35,9 @@ export default function Automatismes({ onBack }) {
 
   const startMode = useCallback((modeKey) => {
     const cfg = MODES[modeKey]
-    const session = generateSession(cfg.count)
+    const session = cfg.custom
+      ? generateCustomSession(cfg.count, cfg.custom)
+      : generateSession(cfg.count)
     setMode(modeKey)
     setQuestions(session)
     setQIndex(0)
@@ -128,7 +136,9 @@ export default function Automatismes({ onBack }) {
               className="flex items-center justify-between rounded-2xl border border-slate-700 bg-surface p-4 transition hover:border-cyan-400"
             >
               <div className="flex items-center gap-3">
-                <Timer className="h-5 w-5 text-cyan-400" />
+                {m.custom
+                  ? <Ruler className="h-5 w-5 text-cyan-400" />
+                  : <Timer className="h-5 w-5 text-cyan-400" />}
                 <div className="text-left">
                   <h3 className="font-bold text-cyan-300">{m.label}</h3>
                   <p className="text-sm text-slate-400">{m.desc}</p>
