@@ -1336,9 +1336,13 @@ function genConversionsContenance() {
   const conversions = [
     { q: (v) => `Convertir ${v} L en mL.`, mult: 1000, range: [1, 5] },
     { q: (v) => `Convertir ${v} L en cL.`, mult: 100, range: [1, 8] },
+    { q: (v) => `Convertir ${v} L en dL.`, mult: 10, range: [1, 10] },
     { q: (v) => `Convertir ${v} dm\u00b3 en L.`, mult: 1, range: [1, 10] },
+    { q: (v) => `Convertir ${v} m\u00b3 en L.`, mult: 1000, range: [1, 3] },
     { q: (v) => `${v * 1000} mL = ? L`, mult: 1, range: [1, 5], isDivision: true },
     { q: (v) => `${v * 100} cL = ? L`, mult: 1, range: [1, 8], isDivision: true },
+    { q: (v) => `${v * 10} dL = ? L`, mult: 1, range: [1, 10], isDivision: true },
+    { q: (v) => `${v * 1000} L = ? m\u00b3`, mult: 1, range: [1, 3], isDivision: true },
   ]
   const conv = pickFrom(conversions)
   const val = rand(conv.range[0], conv.range[1])

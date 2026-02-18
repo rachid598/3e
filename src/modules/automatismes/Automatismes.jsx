@@ -11,12 +11,12 @@ import { fireSuccess, fireSpeedBonus, fireBigWin } from '../../utils/confetti'
 
 const MODES = {
   flash: { label: 'Flash', desc: '10 questions', count: 10 },
-  brevet: { label: 'Mode Brevet', desc: '20 questions', count: 20 },
+  brevet: { label: 'Mode Brevet', desc: '10 questions', count: 10 },
   zen: { label: 'Zen', desc: '10 questions', count: 10 },
   'relatifs-conversions': {
     label: 'Relatifs & Conversions',
     desc: 'Relatifs (+,\u2212,\u00d7) et conversions',
-    count: 15,
+    count: 10,
     custom: SPECIAL_RELATIFS_CONVERSIONS,
   },
 }
