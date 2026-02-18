@@ -5,6 +5,7 @@ import Hub from './pages/Hub'
 import PuissanceStrike from './modules/puissance-strike/PuissanceStrike'
 import Theoremes from './modules/theoremes/Theoremes'
 import Automatismes from './modules/automatismes/Automatismes'
+import FracStrike from './modules/frac-strike/FracStrike'
 
 export default function App() {
   const { player, register, logout } = usePlayer()
@@ -24,6 +25,9 @@ export default function App() {
   }
   if (currentGame === 'automatismes') {
     return <Automatismes onBack={() => setCurrentGame(null)} />
+  }
+  if (currentGame === 'frac-strike') {
+    return <FracStrike onBack={() => setCurrentGame(null)} />
   }
 
   // Hub / home screen

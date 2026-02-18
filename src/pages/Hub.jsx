@@ -1,4 +1,4 @@
-import { Zap, Variable, TreePine, Triangle, Brain, Lock, LogOut } from 'lucide-react'
+import { Zap, Variable, Scissors, Triangle, Brain, Lock, LogOut } from 'lucide-react'
 
 const GAMES = [
   {
@@ -26,12 +26,12 @@ const GAMES = [
     active: false,
   },
   {
-    id: 'arithmetique',
-    title: 'Arithmétique',
-    description: 'PGCD, nombres premiers, fractions irréductibles',
-    icon: TreePine,
-    color: 'from-emerald-500 to-teal-600',
-    active: false,
+    id: 'frac-strike',
+    title: 'Frac-Strike',
+    description: 'Simplifie les fractions en trouvant le diviseur commun',
+    icon: Scissors,
+    color: 'from-rose-500 to-pink-600',
+    active: true,
   },
   {
     id: 'theoremes',
