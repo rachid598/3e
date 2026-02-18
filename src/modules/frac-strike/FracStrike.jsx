@@ -53,61 +53,74 @@ export default function FracStrike({ onBack }) {
   // ─── Normal mode: validate divisor input ──────────────
 
   const handleValidate = useCallback(() => {
-    if (!fraction || feedback || struck) return
+    if (!fraction || struck) return
     const divisor = parseInt(input, 10)
     if (isNaN(divisor) || divisor <= 1) {
       setFeedback({ correct: false, message: 'Entre un diviseur commun > 1' })
       return
     }
 
-    const realGcd = gcd(fraction.num, fraction.den)
     if (fraction.num % divisor !== 0 || fraction.den % divisor !== 0) {
       setFeedback({ correct: false, message: `${divisor} ne divise pas les deux` })
       return
     }
 
-    // Correct divisor (might not be the GCD, but still valid)
-    fireSuccess()
-    setScore((s) => s + 1)
-
-    // Build strike step + simplified step
+    // Valid divisor — simplify
     const simpNum = fraction.num / divisor
     const simpDen = fraction.den / divisor
-    setChain([
-      { num: fraction.num, den: fraction.den },
+    const remaining = gcd(simpNum, simpDen)
+
+    // Append struck + simplified steps to chain
+    setChain((prev) => [
+      ...prev,
       { num: fraction.num, den: fraction.den, factor: divisor, struck: true },
       { num: simpNum, den: simpDen },
     ])
-    setStruck(true)
 
-    if (divisor === realGcd) {
+    fireSuccess()
+
+    if (remaining === 1) {
+      // Fully irreducible — question done
+      setScore((s) => s + 1)
+      setStruck(true)
       setFeedback({ correct: true, message: 'Fraction irréductible !' })
     } else {
-      setFeedback({ correct: true, message: `Bien ! Mais on peut encore simplifier (÷${gcd(simpNum, simpDen)})` })
+      // Partial simplification — continue with simplified fraction
+      setFraction({ num: simpNum, den: simpDen })
+      setInput('')
+      setHint(null)
+      setFeedback(null)
     }
-  }, [fraction, feedback, struck, input])
+  }, [fraction, struck, input])
 
   // ─── Expert mode: auto-validate from CompletionInput ──
 
   const handleExpertCorrect = useCallback((divisor) => {
     if (!fraction || struck) return
-    fireSuccess()
-    setScore((s) => s + 1)
 
     const simpNum = fraction.num / divisor
     const simpDen = fraction.den / divisor
-    setChain([
-      { num: fraction.num, den: fraction.den },
+    const remaining = gcd(simpNum, simpDen)
+
+    // Append struck + simplified steps to chain
+    setChain((prev) => [
+      ...prev,
       { num: fraction.num, den: fraction.den, factor: divisor, struck: true },
       { num: simpNum, den: simpDen },
     ])
-    setStruck(true)
 
-    const realGcd = gcd(fraction.num, fraction.den)
-    if (divisor === realGcd) {
+    fireSuccess()
+
+    if (remaining === 1) {
+      // Fully irreducible — question done
+      setScore((s) => s + 1)
+      setStruck(true)
       setFeedback({ correct: true, message: 'Fraction irréductible !' })
     } else {
-      setFeedback({ correct: true, message: `Bien ! On peut encore simplifier (÷${gcd(simpNum, simpDen)})` })
+      // Partial simplification — continue with simplified fraction
+      setFraction({ num: simpNum, den: simpDen })
+      setHint(null)
+      setFeedback(null)
     }
   }, [fraction, struck])
 
@@ -279,13 +292,8 @@ export default function FracStrike({ onBack }) {
               </div>
             ) : (
               <div className="text-center">
-                <p className="mb-2 text-sm text-emerald-400">Simplifié !</p>
-                <Fraction
-                  num={fraction.num}
-                  den={fraction.den}
-                  factor={chain[1]?.factor}
-                  struck
-                />
+                <p className="mb-2 text-sm text-emerald-400">Irréductible !</p>
+                <Fraction num={fraction.num} den={fraction.den} highlight />
               </div>
             )}
           </div>
