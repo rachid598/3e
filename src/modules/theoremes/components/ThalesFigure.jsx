@@ -74,25 +74,36 @@ export default function ThalesFigure({ config }) {
       ))}
 
       {/* Segment labels */}
-      {/* AB — left upper segment */}
-      <text x={B.x - 24} y={(A.y + B.y) / 2 + 8} textAnchor="middle" className={labelStyle(config.AB)} fontSize="11">
+
+      {/* AB — sub-segment, close to the left secant */}
+      <text x={(A.x + B.x) / 2 - 14} y={(A.y + B.y) / 2 + 4} textAnchor="middle" className={labelStyle(config.AB)} fontSize="11">
         {config.AB === '?' ? '?' : config.AB}
       </text>
 
-      {/* AC — left full segment */}
-      <text x={C.x - 20} y={(B.y + C.y) / 2 + 14} textAnchor="middle" className={labelStyle(config.AC)} fontSize="11">
-        {config.AC === '?' ? '?' : config.AC}
-      </text>
-
-      {/* AM — right upper segment */}
-      <text x={M.x + 24} y={(A.y + M.y) / 2 + 8} textAnchor="middle" className={labelStyle(config.AM)} fontSize="11">
+      {/* AM — sub-segment, close to the right secant */}
+      <text x={(A.x + M.x) / 2 + 14} y={(A.y + M.y) / 2 + 4} textAnchor="middle" className={labelStyle(config.AM)} fontSize="11">
         {config.AM === '?' ? '?' : config.AM}
       </text>
 
-      {/* AN — right full segment */}
-      <text x={N.x + 20} y={(M.y + N.y) / 2 + 14} textAnchor="middle" className={labelStyle(config.AN)} fontSize="11">
-        {config.AN === '?' ? '?' : config.AN}
-      </text>
+      {/* AC — dimension bracket on far left (full A→C segment) */}
+      <g>
+        <line x1={18} y1={A.y + 2} x2={18} y2={C.y - 2} stroke="#64748b" strokeWidth="0.75" />
+        <line x1={14} y1={A.y + 2} x2={22} y2={A.y + 2} stroke="#64748b" strokeWidth="0.75" />
+        <line x1={14} y1={C.y - 2} x2={22} y2={C.y - 2} stroke="#64748b" strokeWidth="0.75" />
+        <text x={18} y={(A.y + C.y) / 2 + 4} textAnchor="middle" className={labelStyle(config.AC)} fontSize="11">
+          {config.AC === '?' ? '?' : config.AC}
+        </text>
+      </g>
+
+      {/* AN — dimension bracket on far right (full A→N segment) */}
+      <g>
+        <line x1={282} y1={A.y + 2} x2={282} y2={N.y - 2} stroke="#64748b" strokeWidth="0.75" />
+        <line x1={278} y1={A.y + 2} x2={286} y2={A.y + 2} stroke="#64748b" strokeWidth="0.75" />
+        <line x1={278} y1={N.y - 2} x2={286} y2={N.y - 2} stroke="#64748b" strokeWidth="0.75" />
+        <text x={282} y={(A.y + N.y) / 2 + 4} textAnchor="middle" className={labelStyle(config.AN)} fontSize="11">
+          {config.AN === '?' ? '?' : config.AN}
+        </text>
+      </g>
     </svg>
   )
 }
