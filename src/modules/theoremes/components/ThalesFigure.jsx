@@ -5,12 +5,30 @@
  * with (BM) ∥ (CN) indicated.
  */
 export default function ThalesFigure({ config }) {
-  // A = top vertex, lines go down-left (to B then C) and down-right (to M then N)
+  // Fixed outer triangle: A (apex), C (bottom-left), N (bottom-right)
   const A = { x: 150, y: 20 }
-  const B = { x: 80, y: 100 }
-  const C = { x: 50, y: 170 }
-  const M = { x: 210, y: 100 }
-  const N = { x: 240, y: 170 }
+  const C = { x: 50, y: 180 }
+  const N = { x: 250, y: 180 }
+
+  // Compute Thales ratio from known values (AB/AC = AM/AN)
+  let ratio
+  if (config.AB !== '?' && config.AC !== '?') {
+    ratio = config.AB / config.AC
+  } else if (config.AM !== '?' && config.AN !== '?') {
+    ratio = config.AM / config.AN
+  } else {
+    ratio = 0.5
+  }
+
+  // B on segment AC, M on segment AN (at the correct proportional position)
+  const B = {
+    x: A.x + ratio * (C.x - A.x),
+    y: A.y + ratio * (C.y - A.y),
+  }
+  const M = {
+    x: A.x + ratio * (N.x - A.x),
+    y: A.y + ratio * (N.y - A.y),
+  }
 
   const labelStyle = (value) =>
     value === '?' ? 'fill-amber-400 font-bold' : 'fill-slate-300'
@@ -25,11 +43,11 @@ export default function ThalesFigure({ config }) {
       <line x1={B.x} y1={B.y} x2={M.x} y2={M.y} stroke="#8b5cf6" strokeWidth="2" strokeDasharray="6 3" />
       <line x1={C.x} y1={C.y} x2={N.x} y2={N.y} stroke="#8b5cf6" strokeWidth="2" strokeDasharray="6 3" />
 
-      {/* Parallel markers (small arrows) */}
-      <text x={145} y={95} textAnchor="middle" className="fill-purple-400" fontSize="10">
+      {/* Parallel markers */}
+      <text x={(B.x + M.x) / 2} y={B.y - 4} textAnchor="middle" className="fill-purple-400" fontSize="10">
         //
       </text>
-      <text x={145} y={168} textAnchor="middle" className="fill-purple-400" fontSize="10">
+      <text x={(C.x + N.x) / 2} y={C.y - 4} textAnchor="middle" className="fill-purple-400" fontSize="10">
         //
       </text>
 
