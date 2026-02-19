@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { usePlayer } from './hooks/usePlayer'
 import PlayerModal from './components/PlayerModal'
 import Hub from './pages/Hub'
-import PuissanceStrike from './modules/puissance-strike/PuissanceStrike'
 import Theoremes from './modules/theoremes/Theoremes'
 import Automatismes from './modules/automatismes/Automatismes'
 import FracStrike from './modules/frac-strike/FracStrike'
@@ -19,9 +18,6 @@ export default function App() {
   }
 
   // Render current game module
-  if (currentGame === 'puissance-strike') {
-    return <PuissanceStrike onBack={() => setCurrentGame(null)} />
-  }
   if (currentGame === 'theoremes') {
     return <Theoremes onBack={() => setCurrentGame(null)} />
   }

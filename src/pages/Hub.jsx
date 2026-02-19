@@ -1,4 +1,4 @@
-import { Zap, Variable, Scissors, Triangle, Brain, Lock, LogOut, LineChart, Compass } from 'lucide-react'
+import { Scissors, Triangle, Brain, LogOut } from 'lucide-react'
 
 const GAMES = [
   {
@@ -8,22 +8,6 @@ const GAMES = [
     icon: Brain,
     color: 'from-cyan-500 to-teal-600',
     active: true,
-  },
-  {
-    id: 'puissance-strike',
-    title: 'Puissance-Strike',
-    description: 'Puissances de 10 & écriture scientifique',
-    icon: Zap,
-    color: 'from-amber-500 to-orange-600',
-    active: true,
-  },
-  {
-    id: 'calcul-litteral',
-    title: 'Calcul Littéral',
-    description: 'Développer, factoriser, identités remarquables',
-    icon: Variable,
-    color: 'from-blue-500 to-indigo-600',
-    active: false,
   },
   {
     id: 'frac-strike',
@@ -39,22 +23,6 @@ const GAMES = [
     description: 'Pythagore, Thalès et réciproques',
     icon: Triangle,
     color: 'from-purple-500 to-violet-600',
-    active: true,
-  },
-  {
-    id: 'fonctions-interactives',
-    title: 'Fonctions',
-    description: 'Graphiques, images et antécédents',
-    icon: LineChart,
-    color: 'from-emerald-500 to-green-600',
-    active: true,
-  },
-  {
-    id: 'theoreme-arena',
-    title: 'Théorème Arena',
-    description: 'Pythagore & Thalès — exercices interactifs',
-    icon: Compass,
-    color: 'from-pink-500 to-red-600',
     active: true,
   },
 ]
@@ -92,37 +60,21 @@ export default function Hub({ player, onSelectGame, onLogout }) {
           return (
             <button
               key={game.id}
-              onClick={() => game.active && onSelectGame(game.id)}
-              disabled={!game.active}
-              className={`group relative flex items-center gap-4 rounded-2xl border p-4 text-left transition ${
-                game.active
-                  ? 'border-slate-700 bg-surface hover:border-accent hover:shadow-lg hover:shadow-accent/10'
-                  : 'cursor-not-allowed border-slate-800 bg-surface/50 opacity-50'
-              }`}
+              onClick={() => onSelectGame(game.id)}
+              className="group relative flex items-center gap-4 rounded-2xl border border-slate-700 bg-surface p-4 text-left transition hover:border-accent hover:shadow-lg hover:shadow-accent/10"
             >
               <div
                 className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${game.color}`}
               >
-                {game.active ? (
-                  <Icon className="h-7 w-7 text-white" />
-                ) : (
-                  <Lock className="h-6 w-6 text-white/60" />
-                )}
+                <Icon className="h-7 w-7 text-white" />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-bold">{game.title}</h3>
                 <p className="text-sm text-slate-400">{game.description}</p>
               </div>
-              {game.active && (
-                <span className="rounded-full bg-accent/20 px-2.5 py-0.5 text-xs font-bold text-accent">
-                  JOUER
-                </span>
-              )}
-              {!game.active && (
-                <span className="rounded-full bg-slate-700 px-2.5 py-0.5 text-xs text-slate-400">
-                  Bientôt
-                </span>
-              )}
+              <span className="rounded-full bg-accent/20 px-2.5 py-0.5 text-xs font-bold text-accent">
+                JOUER
+              </span>
             </button>
           )
         })}
