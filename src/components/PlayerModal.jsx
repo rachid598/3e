@@ -3,7 +3,7 @@ import { UserCircle } from 'lucide-react'
 
 export default function PlayerModal({ onRegister }) {
   const [name, setName] = useState('')
-  const [classe, setClasse] = useState('3e1')
+  const [classe, setClasse] = useState('3G1')
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -39,14 +39,14 @@ export default function PlayerModal({ onRegister }) {
           onChange={(e) => setClasse(e.target.value)}
           className="mb-5 w-full rounded-lg border border-slate-600 bg-surface-light px-3 py-2 text-white outline-none focus:border-accent"
         >
-          <option value="3e1">3e1</option>
-          <option value="3e2">3e2</option>
-          <option value="3e3">3e3</option>
-          <option value="3e4">3e4</option>
-          <option value="3e5">3e5</option>
-          <option value="3e6">3e6</option>
-          <option value="3e7">3e7</option>
-          <option value="3e8">3e8</option>
+          <option value="3G1">3G1</option>
+          <option value="3G2">3G2</option>
+          <option value="3G3">3G3</option>
+          <option value="3G4">3G4</option>
+          <option value="3G5">3G5</option>
+          <option value="3G6">3G6</option>
+          <option value="3G7">3G7</option>
+          <option value="3G8">3G8</option>
         </select>
         <button
           type="submit"
