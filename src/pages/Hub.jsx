@@ -36,7 +36,6 @@ export default function Hub({ player, onSelectGame, onLogout }) {
           <h1 className="text-2xl font-bold">
             Maths <span className="text-accent">3e</span>
           </h1>
-          <p className="text-sm text-slate-400">Brevet Ready</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
