@@ -30,6 +30,26 @@ export default function ThalesFigure({ config }) {
     y: A.y + ratio * (N.y - A.y),
   }
 
+  // Dimension brackets along segments AC and AN (offset outward)
+  const bDist = 18 // bracket offset from segment
+  const capLen = 5  // end-cap length
+
+  // AC bracket: outward perpendicular = left of A→C direction
+  const lAC = Math.sqrt((C.x - A.x) ** 2 + (C.y - A.y) ** 2)
+  const pxAC = -(C.y - A.y) / lAC // outward unit x
+  const pyAC = (C.x - A.x) / lAC  // outward unit y
+  const acA = { x: A.x + pxAC * bDist, y: A.y + pyAC * bDist }
+  const acC = { x: C.x + pxAC * bDist, y: C.y + pyAC * bDist }
+  const acLbl = { x: (acA.x + acC.x) / 2 + pxAC * 10, y: (acA.y + acC.y) / 2 + pyAC * 10 }
+
+  // AN bracket: outward perpendicular = right of A→N direction
+  const lAN = Math.sqrt((N.x - A.x) ** 2 + (N.y - A.y) ** 2)
+  const pxAN = (N.y - A.y) / lAN
+  const pyAN = -(N.x - A.x) / lAN
+  const anA = { x: A.x + pxAN * bDist, y: A.y + pyAN * bDist }
+  const anN = { x: N.x + pxAN * bDist, y: N.y + pyAN * bDist }
+  const anLbl = { x: (anA.x + anN.x) / 2 + pxAN * 10, y: (anA.y + anN.y) / 2 + pyAN * 10 }
+
   const labelStyle = (value) =>
     value === '?' ? 'fill-amber-400 font-bold' : 'fill-slate-300'
 
@@ -85,22 +105,22 @@ export default function ThalesFigure({ config }) {
         {config.AM === '?' ? '?' : config.AM}
       </text>
 
-      {/* AC — dimension bracket on far left (full A→C segment) */}
+      {/* AC — dimension bracket along segment (full A→C) */}
       <g>
-        <line x1={18} y1={A.y + 2} x2={18} y2={C.y - 2} stroke="#64748b" strokeWidth="0.75" />
-        <line x1={14} y1={A.y + 2} x2={22} y2={A.y + 2} stroke="#64748b" strokeWidth="0.75" />
-        <line x1={14} y1={C.y - 2} x2={22} y2={C.y - 2} stroke="#64748b" strokeWidth="0.75" />
-        <text x={18} y={(A.y + C.y) / 2 + 4} textAnchor="middle" className={labelStyle(config.AC)} fontSize="11">
+        <line x1={acA.x} y1={acA.y} x2={acC.x} y2={acC.y} stroke="#64748b" strokeWidth="0.75" />
+        <line x1={acA.x} y1={acA.y} x2={acA.x - pxAC * capLen} y2={acA.y - pyAC * capLen} stroke="#64748b" strokeWidth="0.75" />
+        <line x1={acC.x} y1={acC.y} x2={acC.x - pxAC * capLen} y2={acC.y - pyAC * capLen} stroke="#64748b" strokeWidth="0.75" />
+        <text x={acLbl.x} y={acLbl.y + 4} textAnchor="middle" className={labelStyle(config.AC)} fontSize="11">
           {config.AC === '?' ? '?' : config.AC}
         </text>
       </g>
 
-      {/* AN — dimension bracket on far right (full A→N segment) */}
+      {/* AN — dimension bracket along segment (full A→N) */}
       <g>
-        <line x1={282} y1={A.y + 2} x2={282} y2={N.y - 2} stroke="#64748b" strokeWidth="0.75" />
-        <line x1={278} y1={A.y + 2} x2={286} y2={A.y + 2} stroke="#64748b" strokeWidth="0.75" />
-        <line x1={278} y1={N.y - 2} x2={286} y2={N.y - 2} stroke="#64748b" strokeWidth="0.75" />
-        <text x={282} y={(A.y + N.y) / 2 + 4} textAnchor="middle" className={labelStyle(config.AN)} fontSize="11">
+        <line x1={anA.x} y1={anA.y} x2={anN.x} y2={anN.y} stroke="#64748b" strokeWidth="0.75" />
+        <line x1={anA.x} y1={anA.y} x2={anA.x - pxAN * capLen} y2={anA.y - pyAN * capLen} stroke="#64748b" strokeWidth="0.75" />
+        <line x1={anN.x} y1={anN.y} x2={anN.x - pxAN * capLen} y2={anN.y - pyAN * capLen} stroke="#64748b" strokeWidth="0.75" />
+        <text x={anLbl.x} y={anLbl.y + 4} textAnchor="middle" className={labelStyle(config.AN)} fontSize="11">
           {config.AN === '?' ? '?' : config.AN}
         </text>
       </g>
