@@ -1,4 +1,4 @@
-import { Scissors, Triangle, Brain, LogOut } from 'lucide-react'
+import { Scissors, Triangle, Brain, LogOut, LineChart, Compass } from 'lucide-react'
 
 const GAMES = [
   {
@@ -23,6 +23,22 @@ const GAMES = [
     description: 'Pythagore, Thalès et réciproques',
     icon: Triangle,
     color: 'from-purple-500 to-violet-600',
+    active: true,
+  },
+  {
+    id: 'fonctions-interactives',
+    title: 'Fonctions',
+    description: 'Graphiques, images et antécédents',
+    icon: LineChart,
+    color: 'from-emerald-500 to-green-600',
+    active: true,
+  },
+  {
+    id: 'theoreme-arena',
+    title: 'Théorème Arena',
+    description: 'Pythagore & Thalès — exercices interactifs',
+    icon: Compass,
+    color: 'from-pink-500 to-red-600',
     active: true,
   },
 ]
