@@ -5,6 +5,8 @@ import Hub from './pages/Hub'
 import Theoremes from './modules/theoremes/Theoremes'
 import Automatismes from './modules/automatismes/Automatismes'
 import FracStrike from './modules/frac-strike/FracStrike'
+import FonctionsInteractives from './modules/FonctionsInteractives/FonctionsInteractives'
+import TheoremeArena from './modules/TheoremeArena/TheoremeArena'
 
 export default function App() {
   const { player, register, logout } = usePlayer()
@@ -24,6 +26,12 @@ export default function App() {
   }
   if (currentGame === 'frac-strike') {
     return <FracStrike onBack={() => setCurrentGame(null)} />
+  }
+  if (currentGame === 'fonctions-interactives') {
+    return <FonctionsInteractives onBack={() => setCurrentGame(null)} />
+  }
+  if (currentGame === 'theoreme-arena') {
+    return <TheoremeArena onBack={() => setCurrentGame(null)} />
   }
 
   // Hub / home screen
